@@ -14,6 +14,7 @@ class TextEditorPresenter
     {@horizontalScrollbarHeight, @verticalScrollbarWidth} = params
     {@lineHeight, @baseCharacterWidth, @lineOverdrawMargin, @backgroundColor, @gutterBackgroundColor} = params
     {@cursorBlinkPeriod, @cursorBlinkResumeDelay, @stoppedScrollingDelay} = params
+    @height ?= @computeContentHeight()
 
     @disposables = new CompositeDisposable
     @emitter = new Emitter
@@ -118,7 +119,7 @@ class TextEditorPresenter
     contentHeight = @computeContentHeight()
     clientWidthWithoutVerticalScrollbar = @contentFrameWidth
     clientWidthWithVerticalScrollbar = clientWidthWithoutVerticalScrollbar - @verticalScrollbarWidth
-    clientHeightWithoutHorizontalScrollbar = @getHeight()
+    clientHeightWithoutHorizontalScrollbar = @height
     clientHeightWithHorizontalScrollbar = clientHeightWithoutHorizontalScrollbar - @horizontalScrollbarHeight
     horizontalScrollbarVisible =
       contentWidth > clientWidthWithoutVerticalScrollbar or
@@ -328,7 +329,7 @@ class TextEditorPresenter
 
   computeEndRow: ->
     startRow = Math.floor(@scrollTop / @lineHeight)
-    visibleLinesCount = Math.ceil(@getHeight() / @lineHeight) + 1
+    visibleLinesCount = Math.ceil(@height / @lineHeight) + 1
     endRow = startRow + visibleLinesCount + @lineOverdrawMargin
     Math.min(@model.getScreenLineCount(), endRow)
 
@@ -336,7 +337,7 @@ class TextEditorPresenter
     Math.max(@computeContentWidth(), @contentFrameWidth)
 
   computeScrollHeight: ->
-    Math.max(@computeContentHeight(), @getHeight())
+    Math.max(@computeContentHeight(), @height)
 
   computeContentWidth: ->
     contentWidth = @pixelPositionForScreenPosition([@model.getLongestScreenRow(), Infinity]).left
@@ -369,7 +370,7 @@ class TextEditorPresenter
   getCursorBlinkResumeDelay: -> @cursorBlinkResumeDelay
 
   hasRequiredMeasurements: ->
-    @lineHeight? and @baseCharacterWidth? and @getHeight()? and @scrollTop?
+    @lineHeight? and @baseCharacterWidth? and @height? and @scrollTop?
 
   setScrollTop: (scrollTop) ->
     unless @scrollTop is scrollTop
@@ -418,7 +419,7 @@ class TextEditorPresenter
       @autoHeight = autoHeight
       @updateHeightState()
 
-  setHeight: (height) ->
+  setHeight: (height=@computeContentHeight()) ->
     unless @height is height
       @height = height
       @updateVerticalScrollState()
@@ -427,9 +428,6 @@ class TextEditorPresenter
       @updateLinesState()
       @updateCursorsState()
       @updateLineNumbersState()
-
-  getHeight: ->
-    @height ? @computeContentHeight()
 
   setContentFrameWidth: (contentFrameWidth) ->
     unless @contentFrameWidth is contentFrameWidth
